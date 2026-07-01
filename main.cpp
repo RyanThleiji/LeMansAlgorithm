@@ -339,14 +339,31 @@ int main() {
     double FIFO_lost = runSimulation(FIFO,      NUM_CARS, RACE_TIME, FAIL_RATE, REPAIR_DURATION, CAR_WEIGHT, SEED);
     double greedy_lost = runSimulation(GREEDY,      NUM_CARS, RACE_TIME, FAIL_RATE, REPAIR_DURATION, CAR_WEIGHT, SEED);
     double threshold_lost = runSimulation(THRESHOLD,      NUM_CARS, RACE_TIME, FAIL_RATE, REPAIR_DURATION, CAR_WEIGHT, SEED);
+    double offline_lost   = offlineOptimalLoss(NUM_CARS, RACE_TIME, FAIL_RATE, REPAIR_DURATION, CAR_WEIGHT, SEED);
 
-    std::cout << "SINGLE RACE (using seed 12): " << std::endl;
-    std::cout << "FIFO total time lost: " << FIFO_lost << std::endl;
-    std::cout << "Greedy total time lost: " << greedy_lost << std::endl;
-    std::cout << "Threshold total time lost: " << threshold_lost << std::endl;
+    std::cout << "TEST 1 (seed 12, no contention):\n";
+    std::cout << "  Expected: FIFO 0, Greedy 0, Threshold 0, Offline 0\n";
+    std::cout << "  Actual:   FIFO " << FIFO_lost << ", Greedy " << greedy_lost
+              << ", Threshold " << threshold_lost << ", Offline " << offline_lost << "\n";
+
+    //Non-trivial test case 2: Contention race (seed 28), known expected values
+    double f28 = runSimulation(FIFO,      NUM_CARS, RACE_TIME, FAIL_RATE, REPAIR_DURATION, CAR_WEIGHT, 28);
+    double g28 = runSimulation(GREEDY,    NUM_CARS, RACE_TIME, FAIL_RATE, REPAIR_DURATION, CAR_WEIGHT, 28);
+    double t28 = runSimulation(THRESHOLD, NUM_CARS, RACE_TIME, FAIL_RATE, REPAIR_DURATION, CAR_WEIGHT, 28);
+    double o28 = offlineOptimalLoss(NUM_CARS, RACE_TIME, FAIL_RATE, REPAIR_DURATION, CAR_WEIGHT, 28);
+
+    std::cout << "\nTEST 2 (seed 28, contention):\n";
+    std::cout << "  Expected: FIFO 2.9062, Greedy/Threshold/Offline 2.7062\n";
+    std::cout << "  Actual:   FIFO " << f28 << ", Greedy " << g28
+              << ", Threshold " << t28 << ", Offline " << o28 << "\n";
+
+    //Non-trivial test case 3: Offline optimum is a lower bound on every strategy (seed 28)
+    bool lowerBound = (o28 <= f28) && (o28 <= g28) && (o28 <= t28);
+    std::cout << "\nTEST 3 (offline is a valid lower bound, seed 28):\n";
+    std::cout << "  Expected: offline <= FIFO, Greedy, and Threshold  ->  true\n";
+    std::cout << "  Actual:   " << (lowerBound ? "true" : "false") << "\n";
 
     //Offline simulation for best possible result in race
-    double offline_lost   = offlineOptimalLoss(NUM_CARS, RACE_TIME, FAIL_RATE, REPAIR_DURATION, CAR_WEIGHT, SEED);
     std::cout << "Offline optimal time lost: " << offline_lost << std::endl;
     std::cout << std::endl;
 
