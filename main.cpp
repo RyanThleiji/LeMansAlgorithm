@@ -411,6 +411,7 @@ int main() {
     std::cout << "\n--- Runtime & Memory ---\n";
     std::cout << "Runtime (10,000 races): " << seconds << " s\n";
     std::cout << "Peak memory: " << peakMB << " MB\n";
+    std::cout << std::endl;
 
     /* Print the results, displaying the total time lost, minimum time lost
      * (best races), and maximum time lost (worst races) for each strategy over the 10,000 races
