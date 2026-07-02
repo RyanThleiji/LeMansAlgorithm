@@ -363,10 +363,6 @@ int main() {
     std::cout << "  Expected: offline <= FIFO, Greedy, and Threshold  ->  true\n";
     std::cout << "  Actual:   " << (lowerBound ? "true" : "false") << "\n";
 
-    //Offline simulation for best possible result in race
-    std::cout << "Offline optimal time lost: " << offline_lost << std::endl;
-    std::cout << std::endl;
-
     //Trial loop using 10,000 races with different seeds
     const int NUM_TRIALS = 10000;
 
@@ -377,6 +373,9 @@ int main() {
 
     //Races where the threshold algorithm beats the FIFO and Greedy
     int thresholdWins = 0;
+
+    //Track runtime and memory measurements for the simulations
+    auto startTime = std::chrono::high_resolution_clock::now();
 
     //Run the 10,000 simulations
     for (int i = 0; i < NUM_TRIALS; i++) {
@@ -399,6 +398,19 @@ int main() {
             thresholdWins++;
         }
     }
+
+    //Display the run time using chrono functions
+    auto endTime = std::chrono::high_resolution_clock::now();
+    double seconds = std::chrono::duration<double>(endTime - startTime).count();
+
+    struct rusage usage;
+    getrusage(RUSAGE_SELF, &usage);
+    //From Claude: macOS reports ru_maxrss in bytes since I am running this on a MacBook
+    double peakMB = usage.ru_maxrss / 1024.0 / 1024.0;
+
+    std::cout << "\n--- Runtime & Memory ---\n";
+    std::cout << "Runtime (10,000 races): " << seconds << " s\n";
+    std::cout << "Peak memory: " << peakMB << " MB\n";
 
     /* Print the results, displaying the total time lost, minimum time lost
      * (best races), and maximum time lost (worst races) for each strategy over the 10,000 races
